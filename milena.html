@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-content {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .option {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option:hover {
+            background: #e9ecef;
+        }
+
+        .option.selected {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .next-button {
+            display: block;
+            margin: 20px 0;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .next-button:hover {
+            background: #0056b3;
+        }
+
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 60px;
+            clear: both;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #dee2e6;
+            border-radius: 50%;
+        }
+
+        .dot.active {
+            background: #007bff;
+        }
+
+        #results {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .congratulations {
+            font-size: 24px;
+            color: #28a745;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .score-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px auto;
+        }
+
+        .progress-ring {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .progress-ring .background {
+            stroke: #f0f0f0;
+        }
+
+        .progress-ring .progress {
+            stroke: #28a745;
+            transition: stroke-dasharray 0.5s ease;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .answers-review {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .answer-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .correct {
+            color: #28a745;
+            margin-left: 10px;
+        }
+
+        .incorrect {
+            color: #dc3545;
+            margin-left: 10px;
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="quiz-content"></div>
+        <div id="results">
+            <div class="congratulations">¡Felicidades por completar el quiz!</div>
+            <div class="score-container">
+                <svg class="progress-ring" viewBox="0 0 100 100">
+                    <circle class="background" cx="50" cy="50" r="45" />
+                    <circle class="progress" cx="50" cy="50" r="45" />
+                </svg>
+                <div class="score-text">0%</div>
+            </div>
+            <div class="answers-review"></div>
+        </div>
+        <button id="next-button" class="next-button">Siguiente</button>
+        <div class="progress-dots" id="progress-dots"></div>
+    </div>
+
+    <script>
+        const quizContent = [
+            {
+                type: 'text',
+                content: `El reciclaje es un proceso clave para la gestión de residuos y la conservación del medio ambiente. Al reciclar materiales como papel, plástico, vidrio y metal, se reduce la cantidad de desechos que terminan en los vertederos y se disminuye la necesidad de extraer nuevos recursos naturales. Además, el reciclaje ayuda a ahorrar energía y a reducir la contaminación. Las comunidades que promueven el reciclaje también fomentan la educación ambiental y la conciencia sobre la importancia de cuidar el planeta para futuras generaciones.`
+            },
+            {
+                type: 'question',
+                question: '¿De qué trata el texto?',
+                options: ['La energía solar', 'El reciclaje y su importancia', 'La fotografía digital'],
+                correct: 1
+            },
+            {
+                type: 'question',
+                question: '¿¿Qué materiales se mencionan como reciclables??',
+                options: ['Madera y papel', 'Papel, plástico, vidrio y metal', 'Textiles y vidrio'],
+                correct: 1
+            },
+            {
+                type: 'question',
+                question: '¿Cuál es uno de los beneficios del reciclaje según el texto?',
+                options: ['Aumenta la contaminación', 'Ayuda a ahorrar energía', 'Incrementa la cantidad de residuos en los vertederos'],
+                correct: 1
+            },
+            {
+                type: 'question',
+                question: '¿Cómo contribuye el reciclaje a la conservación de los recursos naturales?',
+                options: ['Aumentando la extracción de recursos', 'Disminuyendo la necesidad de extraer nuevos recursos', 'No tiene ningún impacto'],
+                correct: 1
+            },
+            {
+                type: 'question',
+                question: '¿Qué efecto tiene el reciclaje en las comunidades?',
+                options: ['Promueve la educación ambiental y la conciencia', 'Incrementa la cantidad de residuos', 'Reduce la contaminación del aire'],
+                correct: 1
+            },
+            {
+                type: 'text',
+                content: `La energía eólica es una fuente de energía renovable que utiliza la fuerza del viento para generar electricidad. Mediante el uso de aerogeneradores, el viento hace girar las aspas que están conectadas a un generador, produciendo así energía limpia. La energía eólica no produce emisiones contaminantes y tiene un impacto ambiental reducido en comparación con las fuentes de energía tradicionales como el carbón y el petróleo. Además, es una fuente de energía inagotable, ya que el viento es un recurso natural que no se agota.`
+            },
+            {
+                type: 'question',
+                question: '¿De qué trata el texto?',
+                options: ['La energía eólica y sus beneficios', 'La conservación del agua', 'La importancia del reciclaje'],
+                correct: 0
+            },
+            {
+                type: 'question',
+                question: '¿Qué utilizan los aerogeneradores para generar electricidad?',
+                options: ['Luz solar', 'Fuerza del viento', 'Energía térmica'],
+                correct: 1
+            },
+            {
+                type: 'question',
+                question: '¿Qué tipo de energía produce la energía eólica?',
+                options: ['Energía contaminante', 'Energía limpia', 'Energía química'],
+                correct: 1
+            },
+            {
+                type: 'question',
+                question: '¿Qué impacto tiene la energía eólica en comparación con las fuentes tradicionales de energía?',
+                options: ['Aumenta la contaminación', 'Tiene un impacto ambiental reducido', 'Es más costosa y menos eficiente'],
+                correct: 1
+            },
+            {
+                type: 'question',
+                question: '5. ¿Por qué se considera la energía eólica una fuente inagotable?',
+                options: ['Porque se puede almacenar fácilmente', 'Porque produce energía continuamente sin necesidad de mantenimiento', 'Porque el viento es un recurso natural que no se agota'],
+                correct: 2
+            }
+        ];
+
+        let currentStep = 0;
+        const answers = {};
+
+        function renderContent() {
+            const content = quizContent[currentStep];
+            const contentDiv = document.getElementById('quiz-content');
+
+            if (content.type === 'text') {
+                contentDiv.innerHTML = `
+                    <div class="text-content">
+                        ${content.content}
+                    </div>
+                `;
+            } else {
+                contentDiv.innerHTML = `
+                    <div class="question">
+                        <h3>${content.question}</h3>
+                        <div class="options">
+                            ${content.options.map((option, index) => `
+                                <div class="option ${answers[currentStep] === index ? 'selected' : ''}" 
+                                     onclick="selectOption(${index})">
+                                    ${option}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            updateProgressDots();
+        }
+
+        function selectOption(index) {
+            answers[currentStep] = index;
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelectorAll('.option')[index].classList.add('selected');
+        }
+
+        function updateProgressDots() {
+            const dotsContainer = document.getElementById('progress-dots');
+            dotsContainer.innerHTML = quizContent.map((_, index) => `
+                <div class="dot ${index === currentStep ? 'active' : ''}"></div>
+            `).join('');
+        }
+
+        function calculateScore() {
+            let correct = 0;
+            const questions = quizContent.filter(item => item.type === 'question');
+            questions.forEach((q, index) => {
+                if (answers[index] === q.correct) correct++;
+            });
+            return (correct / questions.length) * 100;
+        }
+
+        function showResults() {
+            const score = calculateScore();
+            const questions = quizContent.filter(item => item.type === 'question');
+
+            // Ocultar el contenido del quiz y mostrar los resultados
+            document.getElementById('quiz-content').style.display = 'none';
+            document.getElementById('next-button').style.display = 'none';
+            document.getElementById('progress-dots').style.display = 'none';
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+
+            // Actualizar el círculo de progreso
+            const circle = document.querySelector('.progress-ring .progress');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            const offset = circumference - (score / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            // Actualizar el texto del puntaje
+            document.querySelector('.score-text').textContent = `${Math.round(score)}%`;
+
+            // Mostrar la revisión de respuestas
+            const reviewDiv = document.querySelector('.answers-review');
+            reviewDiv.innerHTML = questions.map((q, index) => `
+                <div class="answer-item">
+                    <div class="question-text">${q.question}</div>
+                    <div>
+                        Tu respuesta: ${q.options[answers[index]]}
+                        ${answers[index] === q.correct
+                    ? '<span class="correct">✓ Correcto</span>'
+                    : `<span class="incorrect">✗ Incorrecto - Respuesta correcta: ${q.options[q.correct]}</span>`
+                }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('next-button').addEventListener('click', () => {
+            if (currentStep === quizContent.length - 1) {
+                showResults();
+            } else {
+                currentStep++;
+                renderContent();
+            }
+        });
+
+        // Iniciar el quiz
+        renderContent();
+    </script>
+</body>
+
+</html>
